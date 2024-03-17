@@ -49,4 +49,21 @@ public class EmployeeController {
         LOGGER.info("Employee object created successfully: {}", employee);
         return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
     }
+
+    @PutMapping("/employee")
+    public ResponseEntity<Employee> updateEmployee(@Valid @RequestBody Employee employee) {
+        LOGGER.info("Execution started for updating employee object...");
+        Employee updatedEmployee = employeeService.updateEmployee(employee);
+        LOGGER.info("Employee object updated successfully: {}", updatedEmployee);
+        return new ResponseEntity<>(updatedEmployee, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/employee/{empId}")
+    public ResponseEntity<Void> deleteEmployee(@Pattern(regexp = EmployeeConstant.EMP_ID_REGEXP, message = EmployeeConstant.EMP_ID_REGEXP_MSG)
+                                                 @PathVariable String empId) {
+        LOGGER.info("Execution started for deleting employee object...");
+        employeeService.deleteEmployee(empId);
+        LOGGER.info("Employee object deleted successfully");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

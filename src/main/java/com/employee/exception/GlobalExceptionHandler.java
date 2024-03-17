@@ -19,6 +19,15 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(GenericException.class)
+    public ResponseEntity<BusinessErrorResponse> handleGenericException(GenericException exception) {
+        BusinessErrorResponse errorResponse = BusinessErrorResponse.builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .message(exception.getMessage())
+                .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<BusinessErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception) {
         BusinessErrorResponse errorResponse = BusinessErrorResponse.builder()

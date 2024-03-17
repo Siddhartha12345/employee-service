@@ -3,6 +3,7 @@ package com.employee.controller;
 import com.employee.constant.EmployeeTestConstant;
 import com.employee.entity.Employee;
 import com.employee.feign.DepartmentFeign;
+import com.employee.repository.EmployeeGarbageRepository;
 import com.employee.repository.EmployeeRepository;
 import com.employee.service.IEmployeeService;
 import com.employee.service.impl.EmployeeService;
@@ -42,7 +43,10 @@ public class EmployeeControllerTest {
     @MockBean
     private EmployeeRepository employeeRepository;
 
-    // GET /employee
+    @MockBean
+    private EmployeeGarbageRepository employeeGarbageRepository;
+
+    // GET /employee ------------------------------------------
     @Test
     @DisplayName("Test to retrieve employee list successfully")
     public void testGetEmpList_Success() throws Exception {
@@ -65,7 +69,7 @@ public class EmployeeControllerTest {
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
     }
 
-    // GET /employee/{empId}
+    // GET /employee/{empId} ---------------------------------
     @Test
     @DisplayName("Test success scenario to retrieve employee by ID")
     public void testEmployeeById_Success() throws Exception {
@@ -97,7 +101,7 @@ public class EmployeeControllerTest {
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
     }
 
-    // POST /employee
+    // POST /employee ------------------------------------
     @Test
     @DisplayName("Test success scenario to create employee")
     public void testPost_ToCreateEmployee() throws Exception {
@@ -180,5 +184,67 @@ public class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(employee)))
                 .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+    }
+
+    // PUT /employee ---------------------------------------
+    @Test
+    @DisplayName("Test success scenario to update employee")
+    public void testPut_ToUpdateEmployee() throws Exception {
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+                .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
+        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employee)))
+                .andReturn();
+        Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
+    }
+
+    @Test
+    @DisplayName("Test negative scenario to update employee when employee id does not exist")
+    public void testPut_InvalidEmpId() throws Exception {
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+                .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
+        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employee)))
+                .andReturn();
+        Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
+    }
+
+    // DELETE /employee/{empid} ----------------------------------------------
+    @Test
+    @DisplayName("Test success scenario to delete employee")
+    public void testDelete_Success() throws Exception {
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+                .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
+        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
+        Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(1);
+        Mockito.doNothing().when(employeeRepository).deleteById(Mockito.anyString());
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
+                                    .andReturn();
+        Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
+    }
+
+    @Test
+    @DisplayName("Test negative scenario to delete employee when Emp ID does not exist")
+    public void testDelete_InvalidEmpId() throws Exception {
+        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
+                .andReturn();
+        Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
+    }
+
+    @Test
+    @DisplayName("Test negative scenario to delete employee when Emp Id could not be saved in garbage table")
+    public void testDelete_EmpIdSaveError() throws Exception {
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+                .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
+        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
+        Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(0);
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
+                .andReturn();
+        Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_INTERNAL_SERVER_ERR_CODE);
     }
 }
