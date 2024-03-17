@@ -1,8 +1,10 @@
 package com.employee.service.impl;
 
 import com.employee.entity.Employee;
+import com.employee.exception.GenericException;
 import com.employee.exception.ResourceNotFoundException;
 import com.employee.feign.DepartmentFeign;
+import com.employee.repository.EmployeeGarbageRepository;
 import com.employee.repository.EmployeeRepository;
 import com.employee.service.IEmployeeService;
 import org.slf4j.Logger;
@@ -21,6 +23,9 @@ public class EmployeeService implements IEmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private EmployeeGarbageRepository employeeGarbageRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeService.class);
 
@@ -51,5 +56,35 @@ public class EmployeeService implements IEmployeeService {
         });
         LOGGER.info("Fetch operation completed!!");
         return employee;
+    }
+
+    @Override
+    public Employee updateEmployee(Employee employee) {
+        LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", employee.getEmployeeId());
+        employeeRepository.findById(employee.getEmployeeId()).orElseThrow(() -> {
+            LOGGER.error("No Record found for the given employee ID: {}", employee.getEmployeeId());
+            throw new ResourceNotFoundException("Employee with given employee ID is not found on the DB: " + employee.getEmployeeId());
+        });
+        LOGGER.info("Record found | Updating employee object on the DB for employee ID: {}", employee.getEmployeeId());
+        return employeeRepository.save(employee);
+    }
+
+    @Override
+    public void deleteEmployee(String empId) {
+        LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", empId);
+        employeeRepository.findById(empId).orElseThrow(() -> {
+            LOGGER.error("No Record found for the given employee ID: {}", empId);
+            throw new ResourceNotFoundException("Employee with given employee ID is not found on the DB: " + empId);
+        });
+        LOGGER.info("Record found | Persisting employee ID: {} before deleting it from employeedb.employee table", empId);
+        int row = employeeGarbageRepository.saveEmpIdInGarbageTable(empId);
+        if(row > 0) {
+            LOGGER.info("Employee ID {} persisted in employeedb.emp_garbage_tbl", empId);
+        } else {
+            LOGGER.error("Employee ID {} could not be persisted in employeedb.emp_garbage_tbl", empId);
+            throw new GenericException("Unable to persist employee id " + empId + " in employeedb.emp_garbage_tbl");
+        }
+        LOGGER.info("Deleting employee {} from employeedb.employee table", empId);
+        employeeRepository.deleteById(empId);
     }
 }
