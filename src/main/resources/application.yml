@@ -12,3 +12,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  application:
+    name: ems-employee-service
+  config:
+    import: configserver:http://localhost:8082
