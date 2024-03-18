@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.employee</groupId>
-	<artifactId>employee-service</artifactId>
+	<artifactId>ems-employee-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>employee-service</name>
+	<name>ems-employee-service</name>
 	<description>Spring Boot project for employee microservice</description>
 	<properties>
 		<java.version>17</java.version>
