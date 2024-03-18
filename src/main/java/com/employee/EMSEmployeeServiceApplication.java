@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class EmployeeServiceApplication {
+public class EMSEmployeeServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(EmployeeServiceApplication.class, args);
+		SpringApplication.run(EMSEmployeeServiceApplication.class, args);
 	}
 
 }
