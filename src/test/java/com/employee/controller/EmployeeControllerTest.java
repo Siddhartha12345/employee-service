@@ -46,6 +46,7 @@ public class EmployeeControllerTest {
     @MockBean
     private EmployeeGarbageRepository employeeGarbageRepository;
 
+
     // GET /employee ------------------------------------------
     @Test
     @DisplayName("Test to retrieve employee list successfully")
@@ -105,7 +106,8 @@ public class EmployeeControllerTest {
     @Test
     @DisplayName("Test success scenario to create employee")
     public void testPost_ToCreateEmployee() throws Exception {
-        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("UI Dev")
+                .designation("Software Engg").gender("Male").salary(1000000).address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -190,7 +192,8 @@ public class EmployeeControllerTest {
     @Test
     @DisplayName("Test success scenario to update employee")
     public void testPut_ToUpdateEmployee() throws Exception {
-        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("UI Dev")
+                .designation("Software Engg").gender("Male").salary(1000000).address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
@@ -203,7 +206,8 @@ public class EmployeeControllerTest {
     @Test
     @DisplayName("Test negative scenario to update employee when employee id does not exist")
     public void testPut_InvalidEmpId() throws Exception {
-        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
+        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("UI Dev")
+                .designation("Software Engg").gender("Male").salary(1000000).address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)

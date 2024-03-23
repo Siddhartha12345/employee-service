@@ -30,6 +30,17 @@ public class Employee {
     @NotEmpty(message = EmployeeConstant.EMP_LNAME_MSG)
     private String lastName;
 
+    @NotEmpty(message = EmployeeConstant.EMP_ROLE_MSG)
+    private String role;
+
+    @NotEmpty(message = EmployeeConstant.EMP_DSGN_MSG)
+    private String designation;
+
+    @Pattern(regexp = EmployeeConstant.EMP_GENDER_REGEXP, message = EmployeeConstant.EMP_GENDER_REGEXP_MSG)
+    private String gender;
+
+    private double salary;
+
     @Size(min = 8, max = 50, message = EmployeeConstant.EMP_ADDRESS_SIZE_MSG)
     private String address;
 
