@@ -56,6 +56,9 @@ public class Employee {
     @Pattern(regexp = EmployeeConstant.EMP_STATUS_REGEXP, message = EmployeeConstant.EMP_STATUS_REGEXP_MSG)
     private String maritalStatus;
 
+    @Size(min = 8, max = 255, message = EmployeeConstant.EMP_INFO_MSG)
+    private String employeeInfo;
+
     @Transient
     private Department department;
 }
