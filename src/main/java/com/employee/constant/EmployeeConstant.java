@@ -27,6 +27,8 @@ public class EmployeeConstant {
 
     public static final String EMP_GENDER_REGEXP_MSG = "Gender should be either Male or Female";
 
+    public static final String EMP_INFO_MSG = "Employee info should be in range between 8 and 255 characters";
+
     // Regular expressions
     public static final String EMP_EMAIL_REGEXP = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}";
 

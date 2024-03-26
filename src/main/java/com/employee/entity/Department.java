@@ -9,9 +9,11 @@ import lombok.Data;
 @Builder
 public class Department {
 
-    private String empId;
+    private String departmentId;
 
-    private String deptId;
+    private String departmentName;
 
-    private String deptName;
+    private String departmentHead;
+
+    private String departmentLogo;
 }
