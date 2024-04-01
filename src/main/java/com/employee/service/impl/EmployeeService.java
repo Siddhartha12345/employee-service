@@ -1,10 +1,12 @@
 package com.employee.service.impl;
 
+import com.employee.entity.BasicDetail;
 import com.employee.entity.Employee;
 import com.employee.exception.GenericException;
 import com.employee.exception.ResourceNotFoundException;
 import com.employee.feign.DepartmentFeign;
 import com.employee.repository.EmployeeGarbageRepository;
+import com.employee.repository.EmployeeJDBCRepository;
 import com.employee.repository.EmployeeRepository;
 import com.employee.service.IEmployeeService;
 import org.slf4j.Logger;
@@ -27,6 +29,9 @@ public class EmployeeService implements IEmployeeService {
     @Autowired
     private EmployeeGarbageRepository employeeGarbageRepository;
 
+    @Autowired
+    private EmployeeJDBCRepository employeeJDBCRepository;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeService.class);
 
     @Override
@@ -36,15 +41,15 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
-    public List<Employee> getEmployees() {
+    public List<BasicDetail> getEmployees() {
         LOGGER.info("Fetching employee list from the DB...");
-        List<Employee> employees = employeeRepository.findAll();
-        if(Objects.isNull(employees) || employees.size() == 0) {
+        List<BasicDetail> empBasicDetails = employeeJDBCRepository.getEmployeeBasicDetails();
+        if(Objects.isNull(empBasicDetails) || empBasicDetails.isEmpty()) {
             LOGGER.error("No Records found in the database!!");
             throw new ResourceNotFoundException("Employee List is empty");
         }
         LOGGER.info("Fetch operation completed!!");
-        return employees;
+        return empBasicDetails;
     }
 
     @Override
