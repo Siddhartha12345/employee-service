@@ -1,10 +1,12 @@
 package com.employee.controller;
 
 import com.employee.constant.EmployeeTestConstant;
+import com.employee.entity.BasicDetail;
 import com.employee.entity.Employee;
 import com.employee.feign.DepartmentFeign;
 import com.employee.repository.EmployeeGarbageRepository;
-import com.employee.repository.EmployeeRepository;
+import com.employee.repository.EmployeeJDBCRepository;
+import com.employee.repository.EmployeeJPARepository;
 import com.employee.service.IEmployeeService;
 import com.employee.service.impl.EmployeeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,19 +43,21 @@ public class EmployeeControllerTest {
     private DepartmentFeign departmentFeign;
 
     @MockBean
-    private EmployeeRepository employeeRepository;
+    private EmployeeJPARepository employeeJPARepository;
 
     @MockBean
     private EmployeeGarbageRepository employeeGarbageRepository;
+
+    @MockBean
+    private EmployeeJDBCRepository employeeJDBCRepository;
 
 
     // GET /employee ------------------------------------------
     @Test
     @DisplayName("Test to retrieve employee list successfully")
     public void testGetEmpList_Success() throws Exception {
-        Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
-                        .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
-        Mockito.when(employeeRepository.findAll()).thenReturn(Arrays.asList(employee));
+        BasicDetail basicDetail = BasicDetail.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("Role-A").image("http://sample-img.png").build();
+        Mockito.when(employeeJDBCRepository.getEmployeeBasicDetails()).thenReturn(Arrays.asList(basicDetail));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_LIST_ENDPOINT)
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
@@ -63,7 +67,7 @@ public class EmployeeControllerTest {
     @Test
     @DisplayName("Test negative scenario to retrieve employee list")
     public void testGetEmpList_Failure() throws Exception {
-        Mockito.when(employeeRepository.findAll()).thenReturn(Arrays.asList());
+        Mockito.when(employeeJPARepository.findAll()).thenReturn(Arrays.asList());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_LIST_ENDPOINT)
                         .accept(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -76,7 +80,7 @@ public class EmployeeControllerTest {
     public void testEmployeeById_Success() throws Exception {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.ofNullable(employee));
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.ofNullable(employee));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "EID1")
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
@@ -86,7 +90,7 @@ public class EmployeeControllerTest {
     @Test
     @DisplayName("Test negative scenario to retrieve employee by passing a non existing ID")
     public void testEmployeeById_EmpNotFound() throws Exception {
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "EID4")
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
@@ -195,7 +199,7 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("UI Dev")
                 .designation("Software Engg").gender("Male").salary(1000000).address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
@@ -209,7 +213,7 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("UI Dev")
                 .designation("Software Engg").gender("Male").salary(1000000).address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
@@ -223,9 +227,9 @@ public class EmployeeControllerTest {
     public void testDelete_Success() throws Exception {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(1);
-        Mockito.doNothing().when(employeeRepository).deleteById(Mockito.anyString());
+        Mockito.doNothing().when(employeeJPARepository).deleteById(Mockito.anyString());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
                                     .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
@@ -234,7 +238,7 @@ public class EmployeeControllerTest {
     @Test
     @DisplayName("Test negative scenario to delete employee when Emp ID does not exist")
     public void testDelete_InvalidEmpId() throws Exception {
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
                 .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
@@ -245,7 +249,7 @@ public class EmployeeControllerTest {
     public void testDelete_EmpIdSaveError() throws Exception {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
-        Mockito.when(employeeRepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
+        Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(0);
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
                 .andReturn();
