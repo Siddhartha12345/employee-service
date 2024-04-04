@@ -69,7 +69,7 @@ public class Employee {
     @Schema(type = "string", example = "Single")
     private String maritalStatus;
 
-    @Size(min = 8, max = 255, message = EmployeeConstant.EMP_INFO_MSG)
+    @Size(min = 8, max = 500, message = EmployeeConstant.EMP_INFO_MSG)
     @Schema(type = "string", example = "Clark Kent sample profile info")
     private String employeeInfo;
 

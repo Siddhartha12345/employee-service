@@ -1,7 +1,9 @@
 package com.employee.controller;
 
 import com.employee.constant.EmployeeConstant;
+import com.employee.entity.BasicDetail;
 import com.employee.entity.Employee;
+import com.employee.entity.EmployeeSwaggerResponse;
 import com.employee.response.BusinessErrorResponse;
 import com.employee.response.ValidationErrorResponse;
 import com.employee.service.IEmployeeService;
@@ -39,20 +41,20 @@ public class EmployeeController {
 
     @Operation(summary = EmployeeConstant.OPENAPI_GET_EMPLIST_SUMMARY)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = EmployeeConstant.HTTP_OK_CODE, description = EmployeeConstant.OPENAPI_GET_EMPLIST_200_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, array = @ArraySchema(schema = @Schema(implementation = Employee.class)))}),
+            @ApiResponse(responseCode = EmployeeConstant.HTTP_OK_CODE, description = EmployeeConstant.OPENAPI_GET_EMPLIST_200_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, array = @ArraySchema(schema = @Schema(implementation = BasicDetail.class)))}),
             @ApiResponse(responseCode = EmployeeConstant.HTTP_NOT_FOUND_CODE, description = EmployeeConstant.OPENAPI_GET_EMPLIST_404_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = BusinessErrorResponse.class))})
     })
     @GetMapping("/employee")
-    public ResponseEntity<List<Employee>> getAllEmployees() {
+    public ResponseEntity<List<BasicDetail>> getAllEmployees() {
         LOGGER.info("Execution started for fetching employee list...");
-        List<Employee> employeeList = employeeService.getEmployees();
+        List<BasicDetail> employeeList = employeeService.getEmployees();
         LOGGER.info("Employee list fetched successfully: {}", employeeList);
         return new ResponseEntity<>(employeeList, HttpStatus.OK);
     }
 
     @Operation(summary = EmployeeConstant.OPENAPI_GET_EMP_SUMMARY)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = EmployeeConstant.HTTP_OK_CODE, description = EmployeeConstant.OPENAPI_GET_EMP_200_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Employee.class))}),
+            @ApiResponse(responseCode = EmployeeConstant.HTTP_OK_CODE, description = EmployeeConstant.OPENAPI_GET_EMP_200_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeSwaggerResponse.class))}),
             @ApiResponse(responseCode = EmployeeConstant.HTTP_BAD_REQ_CODE, description = EmployeeConstant.OPENAPI_400_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ValidationErrorResponse.class))}),
             @ApiResponse(responseCode = EmployeeConstant.HTTP_NOT_FOUND_CODE, description = EmployeeConstant.OPENAPI_404_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = BusinessErrorResponse.class))})
     })
@@ -67,7 +69,7 @@ public class EmployeeController {
 
     @Operation(summary = EmployeeConstant.OPENAPI_POST_EMP_SUMMARY)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = EmployeeConstant.HTTP_CREATED_CODE, description = EmployeeConstant.OPENAPI_POST_EMP_201_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Employee.class))}),
+            @ApiResponse(responseCode = EmployeeConstant.HTTP_CREATED_CODE, description = EmployeeConstant.OPENAPI_POST_EMP_201_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeSwaggerResponse.class))}),
             @ApiResponse(responseCode = EmployeeConstant.HTTP_BAD_REQ_CODE, description = EmployeeConstant.OPENAPI_400_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ValidationErrorResponse.class))})
     })
     @PostMapping("/employee")
@@ -80,7 +82,7 @@ public class EmployeeController {
 
     @Operation(summary = EmployeeConstant.OPENAPI_PUT_EMP_SUMMARY)
     @ApiResponses(value = {
-            @ApiResponse(responseCode = EmployeeConstant.HTTP_OK_CODE, description = EmployeeConstant.OPENAPI_PUT_EMP_200_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = Employee.class))}),
+            @ApiResponse(responseCode = EmployeeConstant.HTTP_OK_CODE, description = EmployeeConstant.OPENAPI_PUT_EMP_200_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = EmployeeSwaggerResponse.class))}),
             @ApiResponse(responseCode = EmployeeConstant.HTTP_BAD_REQ_CODE, description = EmployeeConstant.OPENAPI_400_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ValidationErrorResponse.class))}),
             @ApiResponse(responseCode = EmployeeConstant.HTTP_NOT_FOUND_CODE, description = EmployeeConstant.OPENAPI_404_MSG, content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = BusinessErrorResponse.class))})
     })

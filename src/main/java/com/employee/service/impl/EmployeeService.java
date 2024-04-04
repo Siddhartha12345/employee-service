@@ -1,11 +1,13 @@
 package com.employee.service.impl;
 
+import com.employee.entity.BasicDetail;
 import com.employee.entity.Employee;
 import com.employee.exception.GenericException;
 import com.employee.exception.ResourceNotFoundException;
 import com.employee.feign.DepartmentFeign;
 import com.employee.repository.EmployeeGarbageRepository;
-import com.employee.repository.EmployeeRepository;
+import com.employee.repository.EmployeeJDBCRepository;
+import com.employee.repository.EmployeeJPARepository;
 import com.employee.service.IEmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,35 +24,38 @@ public class EmployeeService implements IEmployeeService {
     private DepartmentFeign departmentFeign;
 
     @Autowired
-    private EmployeeRepository employeeRepository;
+    private EmployeeJPARepository employeeJPARepository;
 
     @Autowired
     private EmployeeGarbageRepository employeeGarbageRepository;
+
+    @Autowired
+    private EmployeeJDBCRepository employeeJDBCRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeService.class);
 
     @Override
     public Employee createEmployee(Employee employee) {
         LOGGER.info("Saving employee object on the DB: {}", employee);
-        return employeeRepository.save(employee);
+        return employeeJPARepository.save(employee);
     }
 
     @Override
-    public List<Employee> getEmployees() {
+    public List<BasicDetail> getEmployees() {
         LOGGER.info("Fetching employee list from the DB...");
-        List<Employee> employees = employeeRepository.findAll();
-        if(Objects.isNull(employees) || employees.size() == 0) {
+        List<BasicDetail> empBasicDetails = employeeJDBCRepository.getEmployeeBasicDetails();
+        if(Objects.isNull(empBasicDetails) || empBasicDetails.isEmpty()) {
             LOGGER.error("No Records found in the database!!");
             throw new ResourceNotFoundException("Employee List is empty");
         }
         LOGGER.info("Fetch operation completed!!");
-        return employees;
+        return empBasicDetails;
     }
 
     @Override
     public Employee getEmployeeDetail(String empId) {
         LOGGER.info("Fetching employee object for the given Emp ID: {}", empId);
-        Employee employee = employeeRepository.findById(empId).orElseThrow(() -> {
+        Employee employee = employeeJPARepository.findById(empId).orElseThrow(() -> {
             LOGGER.error("No Record found for the given employee ID: {}", empId);
             throw new ResourceNotFoundException("Employee with given Emp ID is not found on the DB: " + empId);
         });
@@ -61,18 +66,18 @@ public class EmployeeService implements IEmployeeService {
     @Override
     public Employee updateEmployee(Employee employee) {
         LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", employee.getEmployeeId());
-        employeeRepository.findById(employee.getEmployeeId()).orElseThrow(() -> {
+        employeeJPARepository.findById(employee.getEmployeeId()).orElseThrow(() -> {
             LOGGER.error("No Record found for the given employee ID: {}", employee.getEmployeeId());
             throw new ResourceNotFoundException("Employee with given employee ID is not found on the DB: " + employee.getEmployeeId());
         });
         LOGGER.info("Record found | Updating employee object on the DB for employee ID: {}", employee.getEmployeeId());
-        return employeeRepository.save(employee);
+        return employeeJPARepository.save(employee);
     }
 
     @Override
     public void deleteEmployee(String empId) {
         LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", empId);
-        employeeRepository.findById(empId).orElseThrow(() -> {
+        employeeJPARepository.findById(empId).orElseThrow(() -> {
             LOGGER.error("No Record found for the given employee ID: {}", empId);
             throw new ResourceNotFoundException("Employee with given employee ID is not found on the DB: " + empId);
         });
@@ -85,6 +90,6 @@ public class EmployeeService implements IEmployeeService {
             throw new GenericException("Unable to persist employee id " + empId + " in employeedb.emp_garbage_tbl");
         }
         LOGGER.info("Deleting employee {} from employeedb.employee table", empId);
-        employeeRepository.deleteById(empId);
+        employeeJPARepository.deleteById(empId);
     }
 }
