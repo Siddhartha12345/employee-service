@@ -1,5 +1,6 @@
 package com.employee.service.impl;
 
+import com.employee.constant.EmployeeErrorEnum;
 import com.employee.entity.BasicDetail;
 import com.employee.entity.Employee;
 import com.employee.exception.GenericException;
@@ -46,7 +47,7 @@ public class EmployeeService implements IEmployeeService {
         List<BasicDetail> empBasicDetails = employeeJDBCRepository.getEmployeeBasicDetails();
         if(Objects.isNull(empBasicDetails) || empBasicDetails.isEmpty()) {
             LOGGER.error("No Records found in the database!!");
-            throw new ResourceNotFoundException("Employee List is empty");
+            throw new ResourceNotFoundException(EmployeeErrorEnum.EMP_EMPTY_LIST.getErrorCode(), EmployeeErrorEnum.EMP_EMPTY_LIST.getErrorMessage());
         }
         LOGGER.info("Fetch operation completed!!");
         return empBasicDetails;
@@ -57,7 +58,7 @@ public class EmployeeService implements IEmployeeService {
         LOGGER.info("Fetching employee object for the given Emp ID: {}", empId);
         Employee employee = employeeJPARepository.findById(empId).orElseThrow(() -> {
             LOGGER.error("No Record found for the given employee ID: {}", empId);
-            throw new ResourceNotFoundException("Employee with given Emp ID is not found on the DB: " + empId);
+            throw new ResourceNotFoundException(EmployeeErrorEnum.EMP_NOT_FOUND.getErrorCode(), EmployeeErrorEnum.EMP_NOT_FOUND.getErrorMessage());
         });
         LOGGER.info("Fetch operation completed!!");
         return employee;
@@ -68,7 +69,7 @@ public class EmployeeService implements IEmployeeService {
         LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", employee.getEmployeeId());
         employeeJPARepository.findById(employee.getEmployeeId()).orElseThrow(() -> {
             LOGGER.error("No Record found for the given employee ID: {}", employee.getEmployeeId());
-            throw new ResourceNotFoundException("Employee with given employee ID is not found on the DB: " + employee.getEmployeeId());
+            throw new ResourceNotFoundException(EmployeeErrorEnum.EMP_NOT_FOUND.getErrorCode(), EmployeeErrorEnum.EMP_NOT_FOUND.getErrorMessage());
         });
         LOGGER.info("Record found | Updating employee object on the DB for employee ID: {}", employee.getEmployeeId());
         return employeeJPARepository.save(employee);
@@ -79,7 +80,7 @@ public class EmployeeService implements IEmployeeService {
         LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", empId);
         employeeJPARepository.findById(empId).orElseThrow(() -> {
             LOGGER.error("No Record found for the given employee ID: {}", empId);
-            throw new ResourceNotFoundException("Employee with given employee ID is not found on the DB: " + empId);
+            throw new ResourceNotFoundException(EmployeeErrorEnum.EMP_NOT_FOUND.getErrorCode(), EmployeeErrorEnum.EMP_NOT_FOUND.getErrorMessage());
         });
         LOGGER.info("Record found | Persisting employee ID: {} before deleting it from employeedb.employee table", empId);
         int row = employeeGarbageRepository.saveEmpIdInGarbageTable(empId);
@@ -87,7 +88,7 @@ public class EmployeeService implements IEmployeeService {
             LOGGER.info("Employee ID {} persisted in employeedb.emp_garbage_tbl", empId);
         } else {
             LOGGER.error("Employee ID {} could not be persisted in employeedb.emp_garbage_tbl", empId);
-            throw new GenericException("Unable to persist employee id " + empId + " in employeedb.emp_garbage_tbl");
+            throw new GenericException(EmployeeErrorEnum.GARBAGE_TBL_PERSISTENCE_ERR.getErrorCode(), EmployeeErrorEnum.GARBAGE_TBL_PERSISTENCE_ERR.getErrorMessage());
         }
         LOGGER.info("Deleting employee {} from employeedb.employee table", empId);
         employeeJPARepository.deleteById(empId);

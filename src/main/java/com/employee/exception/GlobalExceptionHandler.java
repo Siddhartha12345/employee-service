@@ -1,5 +1,6 @@
 package com.employee.exception;
 
+import com.employee.constant.EmployeeErrorEnum;
 import com.employee.response.BusinessErrorResponse;
 import com.employee.response.ValidationError;
 import com.employee.response.ValidationErrorResponse;
@@ -22,8 +23,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GenericException.class)
     public ResponseEntity<BusinessErrorResponse> handleGenericException(GenericException exception) {
         BusinessErrorResponse errorResponse = BusinessErrorResponse.builder()
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .message(exception.getMessage())
+                .errorCode(exception.getErrorCode())
+                .errorMessage(exception.getMessage())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -31,8 +32,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<BusinessErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception) {
         BusinessErrorResponse errorResponse = BusinessErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(exception.getMessage())
+                .errorCode(exception.getErrorCode())
+                .errorMessage(exception.getMessage())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -40,8 +41,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<BusinessErrorResponse> handleFeignExceptionNotFound(FeignException exception) {
         BusinessErrorResponse errorResponse = BusinessErrorResponse.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(exception.getMessage())
+                .errorCode(EmployeeErrorEnum.FEIGN_ERR_NOT_FOUND.getErrorCode())
+                .errorMessage(exception.getMessage())
                 .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -52,8 +53,8 @@ public class GlobalExceptionHandler {
         List<ValidationError> validationErrorList = new ArrayList<>();
         exception.getBindingResult().getAllErrors().forEach((error) -> {
             ValidationError validationError = ValidationError.builder()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .message(error.getDefaultMessage())
+                    .errorCode(EmployeeErrorEnum.EMP_VALIDATION_ERR.getErrorCode())
+                    .errorMessage(error.getDefaultMessage())
                     .fieldName(((FieldError) error).getField())
                     .build();
             validationErrorList.add(validationError);
@@ -67,8 +68,8 @@ public class GlobalExceptionHandler {
         ValidationErrorResponse errorResponse = new ValidationErrorResponse();
         List<ValidationError> validationErrorList = new ArrayList<>();
         for(ConstraintViolation violation : exception.getConstraintViolations()) {
-            ValidationError validationError = new ValidationError(HttpStatus.BAD_REQUEST, violation.getPropertyPath().toString(),
-                                                                    violation.getMessageTemplate());
+            ValidationError validationError = new ValidationError(EmployeeErrorEnum.EMP_VALIDATION_ERR.getErrorCode(),
+                    violation.getPropertyPath().toString(), violation.getMessageTemplate());
             validationErrorList.add(validationError);
         }
         errorResponse.setValidationErrors(validationErrorList);

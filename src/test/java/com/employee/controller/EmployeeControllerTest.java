@@ -7,6 +7,9 @@ import com.employee.feign.DepartmentFeign;
 import com.employee.repository.EmployeeGarbageRepository;
 import com.employee.repository.EmployeeJDBCRepository;
 import com.employee.repository.EmployeeJPARepository;
+import com.employee.response.BusinessErrorResponse;
+import com.employee.response.ValidationError;
+import com.employee.response.ValidationErrorResponse;
 import com.employee.service.IEmployeeService;
 import com.employee.service.impl.EmployeeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +74,9 @@ public class EmployeeControllerTest {
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_LIST_ENDPOINT)
                         .accept(MediaType.APPLICATION_JSON))
                 .andReturn();
+        BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
+        Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMPTY_LIST_ERR_CODE);
     }
 
     // GET /employee/{empId} ---------------------------------
@@ -94,7 +99,9 @@ public class EmployeeControllerTest {
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "EID4")
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
+        BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
+        Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMP_NOT_FOUND_ERR_CODE);
     }
 
     @Test
@@ -103,7 +110,10 @@ public class EmployeeControllerTest {
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "A04")
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     // POST /employee ------------------------------------
@@ -129,7 +139,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                         .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     @Test
@@ -141,7 +154,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                         .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     @Test
@@ -153,7 +169,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                 .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     @Test
@@ -165,7 +184,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                 .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     @Test
@@ -177,7 +199,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                 .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     @Test
@@ -189,7 +214,10 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                 .andReturn();
+        ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
+        ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
+        Assertions.assertEquals(validationError.getErrorCode(), EmployeeTestConstant.VALIDATION_ERR_CODE);
     }
 
     // PUT /employee ---------------------------------------
@@ -218,7 +246,9 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                 .andReturn();
+        BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
+        Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMP_NOT_FOUND_ERR_CODE);
     }
 
     // DELETE /employee/{empid} ----------------------------------------------
@@ -241,7 +271,9 @@ public class EmployeeControllerTest {
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
                 .andReturn();
+        BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
+        Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMP_NOT_FOUND_ERR_CODE);
     }
 
     @Test
@@ -253,6 +285,8 @@ public class EmployeeControllerTest {
         Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(0);
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
                 .andReturn();
+        BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_INTERNAL_SERVER_ERR_CODE);
+        Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.GARBAGE_TBL_PERSISTENCE_ERR_CODE);
     }
 }
