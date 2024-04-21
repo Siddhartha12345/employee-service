@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 @Builder
 @AllArgsConstructor
@@ -13,9 +12,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 public class BusinessErrorResponse {
 
-    @Schema(type = "string", example = "NOT_FOUND | INTERNAL_SERVER_ERROR")
-    private HttpStatus status;
+    @Schema(type = "string", example = "EMP-SVC-001")
+    private String errorCode;
 
-    @Schema(type = "string", example = "Employee not found")
-    private String message;
+    @Schema(type = "string", example = "Employee List is empty")
+    private String errorMessage;
 }

@@ -1,5 +1,6 @@
 package com.employee.config;
 
+import com.employee.constant.EmployeeErrorEnum;
 import com.employee.exception.GenericException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
@@ -32,7 +33,7 @@ public class EmployeeIdSequenceGenerator implements IdentifierGenerator {
                     LOGGER.info("Employee ID {} deleted successfully from employeedb.emp_garbage_tbl",generatedId);
                 } else {
                     LOGGER.error("Unable to delete Employee ID {} from employeedb.emp_garbage_tbl", generatedId);
-                    throw new GenericException("Emp ID " + generatedId + " could not be deleted from employeedb.emp_garbage_tbl");
+                    throw new GenericException(EmployeeErrorEnum.GARBAGE_TBL_DELETE_ERR.getErrorCode(), EmployeeErrorEnum.GARBAGE_TBL_DELETE_ERR.getErrorMessage());
                 }
                 return generatedId;
             }
