@@ -13,6 +13,10 @@ import com.employee.service.IEmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,12 +40,17 @@ public class EmployeeService implements IEmployeeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeService.class);
 
     @Override
+    @Caching(
+            evict = { @CacheEvict(value = "empBasicDetails", allEntries = true) },
+            put = { @CachePut(value = "employee", key = "#employee.employeeId") }
+    )
     public Employee createEmployee(Employee employee) {
         LOGGER.info("Saving employee object on the DB: {}", employee);
         return employeeJPARepository.save(employee);
     }
 
     @Override
+    @Cacheable(value = "empBasicDetails")
     public List<BasicDetail> getEmployees() {
         LOGGER.info("Fetching employee list from the DB...");
         List<BasicDetail> empBasicDetails = employeeJDBCRepository.getEmployeeBasicDetails();
@@ -54,6 +63,7 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
+    @Cacheable(value = "employee", key = "#empId")
     public Employee getEmployeeDetail(String empId) {
         LOGGER.info("Fetching employee object for the given Emp ID: {}", empId);
         Employee employee = employeeJPARepository.findById(empId).orElseThrow(() -> {
@@ -65,6 +75,10 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
+    @Caching(
+            evict = { @CacheEvict(value = "empBasicDetails", allEntries = true) },
+            put = { @CachePut(value = "employee", key = "#employee.employeeId") }
+    )
     public Employee updateEmployee(Employee employee) {
         LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", employee.getEmployeeId());
         employeeJPARepository.findById(employee.getEmployeeId()).orElseThrow(() -> {
@@ -76,6 +90,8 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
+    @Caching(evict = {@CacheEvict(value = "empBasicDetails", allEntries = true)})
+    @CacheEvict(value = "employee", key = "#empId")
     public void deleteEmployee(String empId) {
         LOGGER.info("Checking whether the employee object exists on the DB for the given employee ID: {}", empId);
         employeeJPARepository.findById(empId).orElseThrow(() -> {

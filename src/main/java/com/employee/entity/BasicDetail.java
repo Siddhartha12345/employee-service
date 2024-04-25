@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BasicDetail {
+public class BasicDetail implements Serializable {
 
     @Schema(type = "string", example = "EID1")
     private String employeeId;
