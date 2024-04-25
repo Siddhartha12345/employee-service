@@ -25,7 +25,7 @@ public class EmployeeIdSequenceGenerator implements IdentifierGenerator {
         try(Connection connection = session.getJdbcConnectionAccess().obtainConnection();) {
             Statement statement=connection.createStatement();
             // if empid exists in emp_garbage_tbl then fetch and return it, and delete it from th table since it is assigned now
-            ResultSet garbageResultSet = statement.executeQuery("select employee_id from employeedb.emp_garbage_tbl LIMIT 1");
+            ResultSet garbageResultSet = statement.executeQuery("SELECT * FROM emp_garbage_tbl ORDER BY CAST(SUBSTRING(employee_id, LOCATE('D', employee_id)+1) AS SIGNED) LIMIT 1");
             if(garbageResultSet.next()) {
                 generatedId = garbageResultSet.getString(1);
                 int delRow = statement.executeUpdate("delete from employeedb.emp_garbage_tbl where employee_id='" + generatedId + "'");

@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.io.Serializable;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -18,7 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 @ToString
 @Table(name = "employee")
-public class Employee {
+public class Employee implements Serializable {
 
     @Id
     @GenericGenerator(name = "emp_seq", strategy = "com.employee.config.EmployeeIdSequenceGenerator")
