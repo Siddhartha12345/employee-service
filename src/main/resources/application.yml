@@ -25,3 +25,15 @@ spring:
     redis:
       cache-null-value: true
       time-to-live: 40000
+
+# needed by ems-common-util in the context of jwt token
+security:
+  jwt:
+    secret-key: 3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b
+    expiration-time: 300000   # 5 * 60 * 1000
+
+# needed by ems-common-util for making a feign client call to user-svc
+feign:
+  auth-feign-svc:
+    baseUrl: http://localhost:8085
+    baseContext: /user-svc/users

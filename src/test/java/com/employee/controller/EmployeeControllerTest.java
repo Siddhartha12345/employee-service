@@ -12,8 +12,12 @@ import com.employee.response.ValidationError;
 import com.employee.response.ValidationErrorResponse;
 import com.employee.service.IEmployeeService;
 import com.employee.service.impl.EmployeeService;
+import com.ems.common.entity.User;
+import com.ems.common.feign.AuthenticationFeign;
+import com.ems.common.security.JwtHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,7 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -54,6 +60,21 @@ public class EmployeeControllerTest {
     @MockBean
     private EmployeeJDBCRepository employeeJDBCRepository;
 
+    // added
+    @MockBean
+    private AuthenticationFeign authenticationFeign;
+
+    @Autowired
+    private JwtHelper jwtHelper;
+
+    private String jwtToken;
+
+    @BeforeEach
+    public void setup() {
+        User user = User.builder().email("john.doe@example.com").password("john123").build();
+        Mockito.when(authenticationFeign.loadUserByUsername(Mockito.anyString())).thenReturn(new ResponseEntity<>(user, HttpStatus.OK));
+        jwtToken = jwtHelper.generateToken(user);
+    }
 
     // GET /employee ------------------------------------------
     @Test
@@ -62,6 +83,7 @@ public class EmployeeControllerTest {
         BasicDetail basicDetail = BasicDetail.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").role("Role-A").image("http://sample-img.png").build();
         Mockito.when(employeeJDBCRepository.getEmployeeBasicDetails()).thenReturn(Arrays.asList(basicDetail));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_LIST_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
@@ -72,8 +94,9 @@ public class EmployeeControllerTest {
     public void testGetEmpList_Failure() throws Exception {
         Mockito.when(employeeJPARepository.findAll()).thenReturn(Arrays.asList());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_LIST_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .accept(MediaType.APPLICATION_JSON))
-                .andReturn();
+                        .andReturn();
         BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
         Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMPTY_LIST_ERR_CODE);
@@ -87,6 +110,7 @@ public class EmployeeControllerTest {
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.ofNullable(employee));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "EID1")
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
@@ -97,6 +121,7 @@ public class EmployeeControllerTest {
     public void testEmployeeById_EmpNotFound() throws Exception {
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "EID4")
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
         BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
@@ -108,6 +133,7 @@ public class EmployeeControllerTest {
     @DisplayName("Test negative scenario to retrieve employee by passing an invalid ID")
     public void testEmployeeById_InvalidEmpId() throws Exception {
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.get(EmployeeTestConstant.GET_EMP_BY_ID_ENDPOINT, "A04")
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .accept(MediaType.APPLICATION_JSON))
                         .andReturn();
         ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
@@ -124,6 +150,7 @@ public class EmployeeControllerTest {
                 .designation("Software Engg").gender("Male").salary(1000000).address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                         .andReturn();
@@ -136,6 +163,7 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                         .andReturn();
@@ -151,6 +179,7 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
                         .andReturn();
@@ -166,9 +195,10 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
-                .andReturn();
+                        .andReturn();
         ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
         ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
@@ -181,9 +211,10 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("test").mobileNo("1111122222").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
-                .andReturn();
+                        .andReturn();
         ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
         ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
@@ -196,9 +227,10 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("111112222222233").maritalStatus("Single").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
-                .andReturn();
+                        .andReturn();
         ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
         ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
@@ -211,9 +243,10 @@ public class EmployeeControllerTest {
         Employee employee = Employee.builder().employeeId("EID1").firstName("Vikas").lastName("Sharma").address("Test Address")
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("test").build();
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.post(EmployeeTestConstant.POST_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
-                .andReturn();
+                        .andReturn();
         ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), ValidationErrorResponse.class);
         ValidationError validationError = validationErrorResponse.getValidationErrors().get(0);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_BAD_REQUEST_CODE);
@@ -229,9 +262,10 @@ public class EmployeeControllerTest {
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
-                .andReturn();
+                        .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
     }
 
@@ -243,9 +277,10 @@ public class EmployeeControllerTest {
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
         MvcResult response = mockMvc.perform(MockMvcRequestBuilders.put(EmployeeTestConstant.PUT_EMP_ENDPOINT)
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employee)))
-                .andReturn();
+                        .andReturn();
         BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
         Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMP_NOT_FOUND_ERR_CODE);
@@ -260,8 +295,9 @@ public class EmployeeControllerTest {
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(1);
         Mockito.doNothing().when(employeeJPARepository).deleteById(Mockito.anyString());
-        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
-                                    .andReturn();
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1")
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken))
+                        .andReturn();
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_OK_CODE);
     }
 
@@ -269,8 +305,9 @@ public class EmployeeControllerTest {
     @DisplayName("Test negative scenario to delete employee when Emp ID does not exist")
     public void testDelete_InvalidEmpId() throws Exception {
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.empty());
-        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
-                .andReturn();
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1")
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken))
+                        .andReturn();
         BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_NOT_FOUND_CODE);
         Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.EMP_NOT_FOUND_ERR_CODE);
@@ -283,8 +320,9 @@ public class EmployeeControllerTest {
                 .emailId("vik.sh@abc.com").image("http://abc.png").mobileNo("1111122222").maritalStatus("Single").build();
         Mockito.when(employeeJPARepository.findById(Mockito.anyString())).thenReturn(Optional.of(employee));
         Mockito.when(employeeGarbageRepository.saveEmpIdInGarbageTable(Mockito.anyString())).thenReturn(0);
-        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1"))
-                .andReturn();
+        MvcResult response = mockMvc.perform(MockMvcRequestBuilders.delete(EmployeeTestConstant.DELETE_EMP_ENDPOINT, "EID1")
+                        .header(EmployeeTestConstant.AUTHORIZATION_HEADER, EmployeeTestConstant.TYPE_BEARER + jwtToken))
+                        .andReturn();
         BusinessErrorResponse errorResponse = objectMapper.readValue(response.getResponse().getContentAsString(), BusinessErrorResponse.class);
         Assertions.assertEquals(response.getResponse().getStatus(), EmployeeTestConstant.HTTP_INTERNAL_SERVER_ERR_CODE);
         Assertions.assertEquals(errorResponse.getErrorCode(), EmployeeTestConstant.GARBAGE_TBL_PERSISTENCE_ERR_CODE);
