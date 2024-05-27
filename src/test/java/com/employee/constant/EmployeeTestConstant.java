@@ -31,4 +31,8 @@ public class EmployeeTestConstant {
     public static final String VALIDATION_ERR_CODE = "EMP-SVC-002";
 
     public static final String GARBAGE_TBL_PERSISTENCE_ERR_CODE = "EMP-SVC-004";
+
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+
+    public static final String TYPE_BEARER = "Bearer ";
 }

@@ -16,6 +16,8 @@
 	<properties>
 		<java.version>17</java.version>
 		<spring-cloud.version>2023.0.0</spring-cloud.version>
+		<springdoc.version>2.2.0</springdoc.version>
+		<ems-util.version>24.5.1-SNAPSHOT</ems-util.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -74,12 +76,18 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.2.0</version>
+            <version>${springdoc.version}</version>
         </dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ems.common</groupId>
+			<artifactId>ems-common-util</artifactId>
+			<version>${ems-util.version}</version>
 		</dependency>
 	</dependencies>
 
